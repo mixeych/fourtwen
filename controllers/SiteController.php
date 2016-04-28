@@ -9,6 +9,7 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\BlogForm;
+use app\models\SignupForm;
 
 class SiteController extends Controller
 {
@@ -64,6 +65,21 @@ class SiteController extends Controller
             return $this->goBack();
         }
         return $this->render('login', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionSignup()
+    {
+        if (!\Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        $model = new SignupForm();
+        if ($model->load(Yii::$app->request->post()) && $model->signUp()) {
+            return $this->goBack();
+        }
+        return $this->render('signup', [
             'model' => $model,
         ]);
     }

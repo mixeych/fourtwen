@@ -1,16 +1,17 @@
 <?php
 
 namespace app\models;
-
-class User extends \yii\base\Object implements \yii\web\IdentityInterface
+use yii\db\ActiveRecord;
+class User extends ActiveRecord implements \yii\web\IdentityInterface
 {
     public $id;
     public $username;
     public $password;
     public $authKey;
+    public $email;
     public $accessToken;
 
-    private static $users = [
+    /*private static $users = [
         '100' => [
             'id' => '100',
             'username' => 'admin',
@@ -25,7 +26,7 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
             'authKey' => 'test101key',
             'accessToken' => '101-token',
         ],
-    ];
+    ];*/
 
     /**
      * @inheritdoc
@@ -66,6 +67,21 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
         return null;
     }
 
+    public static function findByEmail($email)
+    {
+        $res = self::findOne([
+            'email' => $email,
+        ]);
+
+        /*foreach (self::$users as $user) {
+            if (strcasecmp($user['email'], $email) === 0) {
+                return new static($user);
+            }
+        }*/
+
+        return $res;
+    }
+
     /**
      * @inheritdoc
      */
@@ -98,6 +114,20 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function validatePassword($password)
     {
-        return $this->password === $password;
+        $hash = $this->password;
+        return Yii::$app->getSecurity()->validatePassword($password, $hash);
+        /*return $this->password === $password;*/
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($this->isNewRecord) {
+                $this->authKey = \Yii::$app->security->generateRandomString();
+                $this->accessToken = \Yii::$app->security->generateRandomString();
+            }
+            return true;
+        }
+        return false;
     }
 }

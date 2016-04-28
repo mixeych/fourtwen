@@ -1,19 +1,17 @@
 <?php
-
 namespace app\models;
 
 use Yii;
 use yii\base\Model;
+use app\models\User;
 
-/**
- * LoginForm is the model behind the login form.
- */
-class LoginForm extends Model
+class SignupForm extends Model
 {
-    
+
     public $email;
+    public $username;
     public $password;
-    public $rememberMe = true;
+/*    public $rememberMe = true;*/
 
     private $_user = false;
 
@@ -25,11 +23,9 @@ class LoginForm extends Model
     {
         return [
             // username and password are both required
-            [['email', 'password'], 'required'],
+            [['email', 'password', 'username'], 'required'],
+            ['email', 'email'],
             // rememberMe must be a boolean value
-            ['rememberMe', 'boolean'],
-            // password is validated by validatePassword()
-            ['password', 'validatePassword'],
         ];
     }
 
@@ -40,7 +36,7 @@ class LoginForm extends Model
      * @param string $attribute the attribute currently being validated
      * @param array $params the additional name-value pairs given in the rule
      */
-    public function validatePassword($attribute, $params)
+    /*public function validatePassword($attribute, $params)
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
@@ -49,16 +45,21 @@ class LoginForm extends Model
                 $this->addError($attribute, 'Incorrect username or password.');
             }
         }
-    }
+    }*/
 
     /**
      * Logs in a user using the provided username and password.
      * @return boolean whether the user is logged in successfully
      */
-    public function login()
+    public function signUp()
     {
         if ($this->validate()) {
-            return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
+            $user = new User();
+            $hash = Yii::$app->getSecurity()->generatePasswordHash($this->password);
+            $user->username = $this->username;
+            $user->password = $hash;
+            $user->email = $this->email;
+            
         }
         return false;
     }
